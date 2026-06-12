@@ -12,20 +12,19 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "tb_account_types")
+@Table(name = "tb_card_types")
 
-public class AccountType {
+public class CardType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String alias;
+    @Column(length = 50,nullable = false,unique = true)
     private String name;
-    private String description;
 
-    private Boolean idDeleted;
+    private Boolean isDeleted;
 
-    @OneToMany(mappedBy = "accountType")
-    private List<Account> accounts;
+    @OneToMany(mappedBy = "cardType")
+    private List<Card> cards;
 }
