@@ -20,10 +20,16 @@ public class AccountType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(length = 50,nullable = false,unique = true)
     private String alias;
+
+    @Column(length = 50,nullable = false,unique = true)
     private String name;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(nullable = false)
     private Boolean idDeleted;
 
     @OneToMany(mappedBy = "accountType")
