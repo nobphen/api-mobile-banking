@@ -1,7 +1,9 @@
 package com.phen.mbanking.init;
 
 
+import com.phen.mbanking.domain.AccountType;
 import com.phen.mbanking.domain.User;
+import com.phen.mbanking.features.accounttype.AccountTypeRepository;
 import com.phen.mbanking.features.user.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +17,35 @@ import java.util.UUID;
 public class DataInit {
 
     private final UserRepository userRepository;
+    private final AccountTypeRepository accountTypeRepository;
 
 
     @PostConstruct
     void init() {
+
+
+//        if (accountTypeRepository.count() == 0) {
+//
+//            // Account payroll
+//            AccountType payroll = new AccountType();
+//
+//            payroll.setName("Payroll");
+//            payroll.setAlias("payroll");
+//            payroll.setIdDeleted(false);
+//            payroll.setDescription("Payroll Account of user");
+//
+//
+//            // Account saving
+//            AccountType saving = new AccountType();
+//
+//            saving.setName("Saving");
+//            saving.setAlias("saving");
+//            saving.setIdDeleted(false);
+//            saving.setDescription("Saving Account of user");
+//
+//
+//            accountTypeRepository.saveAll(List.of(payroll, saving));
+//        }
 
         if (userRepository.count() == 0) {
 

@@ -1,6 +1,8 @@
 package com.phen.mbanking.features.account.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
@@ -9,11 +11,12 @@ public record AccountCreateRequest(
         @NotBlank(message = "Account no it required")
         String accountNo,
 
-        @NotBlank(message = "Balance is required")
+        @NotNull(message = "Balance is required")
+        @Positive
         BigDecimal balance,
 
         @NotBlank(message = "Account type is required")
-        String accountType,
+        String accountTypeAlias,
 
         @NotBlank(message = "Account owner is required")
         String userUuid

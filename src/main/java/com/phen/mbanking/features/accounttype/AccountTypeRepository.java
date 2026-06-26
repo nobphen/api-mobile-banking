@@ -7,6 +7,11 @@ import java.util.Optional;
 
 public interface AccountTypeRepository extends JpaRepository<AccountType, Integer> {
 
-    /// SELECT * FROM  tb_account_type WHARE alias = ?
+    // SELECT * FROM  tb_account_types WHERE alias = ?
     Optional<AccountType> findByAlias(String alias);
+
+    // SELECT *FROM tb_account_types WHERE name = ?
+    Optional<AccountType> findByName (String name);
+
+
 }
