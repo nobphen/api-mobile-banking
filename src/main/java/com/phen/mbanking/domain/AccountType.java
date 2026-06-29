@@ -30,7 +30,7 @@ public class AccountType {
     private String description;
 
     @Column(nullable = false)
-    private Boolean idDeleted;
+    private Boolean isDeleted;
 
     @OneToMany(mappedBy = "accountType")
     private List<Account> accounts;

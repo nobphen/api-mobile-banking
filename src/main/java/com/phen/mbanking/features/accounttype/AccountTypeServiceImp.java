@@ -22,18 +22,20 @@ public class AccountTypeServiceImp implements AccountTypeService {
     @Override
     public AccountTypeResponse creatAccountType(AccountTypeRequest accountTypeRequest) {
 
-        // Validate alias
 
+        // Validate alias
+        validateAlias(accountTypeRequest.alias());
+
+
+        // Validate name
+        validateName(accountTypeRequest.name());
 
         // Transfer DTO to domain model
         AccountType accountType = accountTypeMapper.fromAccountTypeRequest(accountTypeRequest);
 
-        accountType.setAlias(accountTypeRequest.alias());
-        accountType.setName(accountTypeRequest.name());
-        accountType.setDescription(accountTypeRequest.description());
 
         // System generate data
-        accountType.setIdDeleted(false);
+        accountType.setIsDeleted(false);
 
         accountType = accountTypeRepository.save(accountType);
 
@@ -41,12 +43,43 @@ public class AccountTypeServiceImp implements AccountTypeService {
     }
 
     @Override
-    public List<AccountTypeResponse> findList() {
-        return List.of();
+    public List<AccountTypeResponse> findAll() {
+       return  null;
     }
 
     @Override
     public AccountTypeResponse findByName(String name) {
-        return null;
+      return  null;
+    }
+
+    @Override
+    public AccountTypeResponse updateAccountType(Integer id, AccountTypeRequest accountTypeRequest) {
+
+
+
+    }
+
+    @Override
+    public void delectAccountType(Integer id) {
+
+    }
+
+
+    /**
+     * Validate alias
+     *
+     * @param alias if of account type
+     */
+    private void validateAlias(String alias) {
+        if (accountTypeRepository.existsByAliasAndIsDeletedFalse(alias)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Alias already exists.");
+        }
+    }
+
+
+    private void validateName(String name) {
+        if (accountTypeRepository.existsByNameAndIsDeletedFalse(name)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Name already exists.");
+        }
     }
 }

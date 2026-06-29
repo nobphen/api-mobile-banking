@@ -21,7 +21,7 @@ public interface AccountTypeService {
      *
      * @return {@link List<AccountTypeResponse>}
      */
-    List<AccountTypeResponse> findList();
+    List<AccountTypeResponse> findAll();
 
 
     /**
@@ -31,4 +31,17 @@ public interface AccountTypeService {
      * @return {@link AccountTypeResponse}
      */
     AccountTypeResponse findByName(String name);
+
+
+    /**
+     *
+     * @param id if id of account type
+     * @param accountTypeRequest {@link AccountTypeRequest}
+     * @return {@link  AccountTypeResponse}
+     */
+    AccountTypeResponse updateAccountType (Integer id ,AccountTypeRequest accountTypeRequest);
+
+
+    void  delectAccountType(Integer id);
+
 }

@@ -31,7 +31,7 @@ public class AccountServiceImp implements AccountService {
     public AccountResponse createNewAccount(AccountCreateRequest accountCreateRequest) {
 
         // Validate account type
-        AccountType accountType = accountTypeRepository.findByAlias(accountCreateRequest.accountTypeAlias()).orElseThrow(
+        AccountType accountType = accountTypeRepository.findByAliasAndIsDeletedFalse(accountCreateRequest.accountTypeAlias()).orElseThrow(
                 () -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Account type has not been found"
