@@ -63,7 +63,7 @@ public class AccountTypeController {
      * @return {@link AccountTypeResponse}
      */
     @PutMapping("/{id}")
-    AccountTypeResponse updateAccountType(@Valid @PathVariable Integer id, AccountTypeRequest accountTypeRequest) {
+    AccountTypeResponse updateAccountType(@Valid @PathVariable Integer id,@RequestBody AccountTypeRequest accountTypeRequest) {
         return accountTypeService.updateAccountType(id, accountTypeRequest);
     }
 
