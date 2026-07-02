@@ -48,7 +48,7 @@ public class AccountServiceImp implements AccountService {
         );
 
         // Validate account no
-        if (accountRepository.existsByAccountNo(accountCreateRequest.accountNo())) {
+        if (accountRepository.existsByAccountNoAndIsHiddenFalse(accountCreateRequest.accountNo())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Account no has already been existed"
@@ -89,13 +89,22 @@ public class AccountServiceImp implements AccountService {
 
 
     @Override
-    public List<AccountResponse> findList() {
-        return List.of();
+    public List<AccountResponse> findAll() {
+        return accountRepository.findAllByIsHiddenFalse().stream().map(accountMapper::toAccountResponse).toList();
     }
 
     @Override
-    public AccountResponse findByActNo(String actNo) {
-        return null;
+    public AccountResponse findByAccountNo(String accountNo) {
+
+        Account account = accountRepository.findByAccountNoAndIsHiddenFalse(accountNo).orElseThrow(
+
+                ()->    new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Account no not found."
+                )
+        );
+
+        return accountMapper.toAccountResponse(account);
     }
 
 

@@ -21,12 +21,12 @@ public interface AccountService {
      *
      * @return {@link List<AccountResponse>}
      */
-    List<AccountResponse> findList();
+    List<AccountResponse> findAll();
 
     /**
      *
      * @param actNo is no of account
      * @return {@link AccountResponse}
      */
-    AccountResponse findByActNo(String actNo);
+    AccountResponse findByAccountNo(String findByAccountNo);
 }
