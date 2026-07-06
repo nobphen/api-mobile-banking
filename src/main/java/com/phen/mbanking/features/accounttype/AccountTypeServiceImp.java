@@ -5,6 +5,7 @@ import com.phen.mbanking.features.accounttype.dto.AccountTypeRequest;
 import com.phen.mbanking.features.accounttype.dto.AccountTypeResponse;
 import com.phen.mbanking.mapper.AccountTypeMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -44,7 +45,9 @@ public class AccountTypeServiceImp implements AccountTypeService {
 
     @Override
     public List<AccountTypeResponse> findAll() {
-       return  accountTypeRepository.findAllByIsDeletedFalse().stream().map(accountTypeMapper::toAccountTypeResponse).toList();
+
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        return accountTypeRepository.findAllByIsDeletedFalse(sort).stream().map(accountTypeMapper::toAccountTypeResponse).toList();
     }
 
     @Override
@@ -58,7 +61,7 @@ public class AccountTypeServiceImp implements AccountTypeService {
         );
 
 
-      return  accountTypeMapper.toAccountTypeResponse(accountType);
+        return accountTypeMapper.toAccountTypeResponse(accountType);
     }
 
     @Override
@@ -72,12 +75,12 @@ public class AccountTypeServiceImp implements AccountTypeService {
         );
 
         // Validate alias
-        if(!accountType.getAlias().equals(accountTypeRequest.alias())){
+        if (!accountType.getAlias().equals(accountTypeRequest.alias())) {
             validateAlias(accountTypeRequest.alias());
         }
 
         // Validate name
-        if(!accountType.getName().equals(accountTypeRequest.name())){
+        if (!accountType.getName().equals(accountTypeRequest.name())) {
             validateName(accountTypeRequest.name());
         }
 

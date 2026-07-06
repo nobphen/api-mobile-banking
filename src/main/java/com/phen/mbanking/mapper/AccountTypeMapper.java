@@ -9,6 +9,7 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface AccountTypeMapper {
 
+
     // Map account type to account type response
 
     AccountTypeResponse toAccountTypeResponse(AccountType accountType);

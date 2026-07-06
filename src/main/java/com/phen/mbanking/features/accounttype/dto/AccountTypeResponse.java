@@ -6,6 +6,7 @@ import lombok.Builder;
 public record AccountTypeResponse(
         String alias,
         String name,
-        String description
+        String description,
+        boolean isDeleted
 ) {
 }

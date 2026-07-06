@@ -1,6 +1,7 @@
 package com.phen.mbanking.features.accounttype;
 
 import com.phen.mbanking.domain.AccountType;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -66,6 +67,6 @@ public interface AccountTypeRepository extends JpaRepository<AccountType, Intege
      * FROM tb_account_types
      * WHERE is_deleted = false;
      */
-    List<AccountType> findAllByIsDeletedFalse();
+    List<AccountType> findAllByIsDeletedFalse(Sort sort);
 
 }
