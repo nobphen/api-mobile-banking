@@ -2,6 +2,7 @@ package com.phen.mbanking.features.accounttype;
 
 import com.phen.mbanking.features.accounttype.dto.AccountTypeRequest;
 import com.phen.mbanking.features.accounttype.dto.AccountTypeResponse;
+import com.phen.mbanking.features.accounttype.dto.AccountTypeUpdateRequest;
 
 import java.util.List;
 
@@ -35,13 +36,17 @@ public interface AccountTypeService {
 
     /**
      *
-     * @param id if id of account type
-     * @param accountTypeRequest {@link AccountTypeRequest}
+     * @param alias  of account type
+     * @param accountTypeUpdateRequest {@link AccountTypeUpdateRequest}
      * @return {@link  AccountTypeResponse}
      */
-    AccountTypeResponse updateAccountType (Integer id ,AccountTypeRequest accountTypeRequest);
+    AccountTypeResponse updateAccountTypeByAlias (String alias , AccountTypeUpdateRequest accountTypeUpdateRequest);
 
 
-    void  delectAccountType(Integer id);
+    /**
+     * Delete account type
+     * @param alias of account type
+     */
+    void  delectAccountTypeByAlias(String alias);
 
 }

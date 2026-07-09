@@ -5,6 +5,7 @@ import com.phen.mbanking.features.account.dto.AccountCreateRequest;
 import com.phen.mbanking.features.account.dto.AccountResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,12 +35,16 @@ public class AccountController {
 
     /**
      * Find all account
-     *
+     * @param pageNumber is current page request from client
+     * @param pageSize is size record per page from client
      * @return {@link List<AccountResponse>}
      */
     @GetMapping
-    List<AccountResponse> findAll() {
-        return accountService.findAll();
+    Page<AccountResponse> findAll(
+            @RequestParam(required = false,defaultValue = "0") int pageNumber,
+            @RequestParam(required = false,defaultValue = "15") int pageSize
+    ) {
+        return accountService.findAll(pageNumber, pageSize);
     }
 
     /**

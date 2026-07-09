@@ -20,13 +20,13 @@ public class AccountType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(length = 50,nullable = false,unique = true)
+    @Column(length = 50, nullable = false, unique = true)
     private String alias;
 
-    @Column(length = 50,nullable = false,unique = true)
+    @Column(length = 50, nullable = false, unique = true)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT DEFAULT 'hello'")
     private String description;
 
     @Column(nullable = false)

@@ -10,13 +10,14 @@ import java.util.List;
 
 public interface AccountTypeRepository extends JpaRepository<AccountType, Integer> {
 
+
     /**
      * Find account type by alias.
      * SQL:
      * SELECT * FROM tb_account_types
-     * WHERE alias = ? AND is_deleted = false;
+     * WHERE alias = ?
      */
-    Optional<AccountType> findByAliasAndIsDeletedFalse(String alias);
+    Optional<AccountType> findByAlias(String alias);
 
     /**
      * Find account type by name.
@@ -48,7 +49,7 @@ public interface AccountTypeRepository extends JpaRepository<AccountType, Intege
      *      AND is_deleted = false
      * );
      */
-    boolean existsByNameAndIsDeletedFalse(String name);
+  //  boolean existsByNameAndIsDeletedFalse(String name);
 
     /**
      * Find by id.
@@ -58,7 +59,7 @@ public interface AccountTypeRepository extends JpaRepository<AccountType, Intege
      * WHERE id = ?
      * AND is_deleted = false;
      */
-    Optional<AccountType> findByIdAndIsDeletedFalse(Integer id);
+   // Optional<AccountType> findByIdAndIsDeletedFalse(Integer id);
 
     /**
      * Find all active account types.
@@ -67,6 +68,6 @@ public interface AccountTypeRepository extends JpaRepository<AccountType, Intege
      * FROM tb_account_types
      * WHERE is_deleted = false;
      */
-    List<AccountType> findAllByIsDeletedFalse(Sort sort);
+   // List<AccountType> findAllByIsDeletedFalse(Sort sort);
 
 }

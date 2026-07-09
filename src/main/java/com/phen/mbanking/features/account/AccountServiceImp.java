@@ -9,6 +9,9 @@ import com.phen.mbanking.features.accounttype.AccountTypeRepository;
 import com.phen.mbanking.features.user.UserRepository;
 import com.phen.mbanking.mapper.AccountMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,13 +28,13 @@ public class AccountServiceImp implements AccountService {
     private final AccountTypeRepository accountTypeRepository;
     private final UserRepository userRepository;
 
-    private  final AccountMapper accountMapper;
+    private final AccountMapper accountMapper;
 
     @Override
     public AccountResponse createNewAccount(AccountCreateRequest accountCreateRequest) {
 
         // Validate account type
-        AccountType accountType = accountTypeRepository.findByAliasAndIsDeletedFalse(accountCreateRequest.accountTypeAlias()).orElseThrow(
+        AccountType accountType = accountTypeRepository.findByAlias(accountCreateRequest.accountTypeAlias()).orElseThrow(
                 () -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Account type has not been found"
@@ -89,16 +92,27 @@ public class AccountServiceImp implements AccountService {
 
 
     @Override
-    public List<AccountResponse> findAll() {
-        return accountRepository.findAllByIsHiddenFalse().stream().map(accountMapper::toAccountResponse).toList();
+    public Page<AccountResponse> findAll(int pageNumber, int pageSize) {
+
+        // Stort data by id
+        Sort sortById = Sort.by(Sort.Direction.DESC, "id");
+
+
+        // Request to jpa
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sortById);
+
+        Page<Account> accounts = accountRepository.findAll(pageRequest);
+
+
+        return accounts.map(accountMapper::toAccountResponse);
     }
 
     @Override
     public AccountResponse findByAccountNo(String accountNo) {
 
-        Account account = accountRepository.findByAccountNoAndIsHiddenFalse(accountNo).orElseThrow(
+        Account account = accountRepository.findByAccountNo(accountNo).orElseThrow(
 
-                ()->    new ResponseStatusException(
+                () -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Account no not found."
                 )

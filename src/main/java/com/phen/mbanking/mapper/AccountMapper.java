@@ -11,7 +11,7 @@ public interface AccountMapper {
 
     /// Map account to AccountResponse
 
-    @Mapping(source = "accountType.alias",target = "accountTypeAlias")
+    //@Mapping(source = "accountType.alias",target = "accountTypeAlias")
     AccountResponse toAccountResponse(Account account);
 
 

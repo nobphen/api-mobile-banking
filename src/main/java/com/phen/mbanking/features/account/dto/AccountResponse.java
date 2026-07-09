@@ -1,5 +1,6 @@
 package com.phen.mbanking.features.account.dto;
 
+import com.phen.mbanking.features.accounttype.dto.AccountTypeResponse;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -11,6 +12,6 @@ public record AccountResponse(
         String accountName,
         String accountNo,
         BigDecimal balance,
-        String accountTypeAlias
+        AccountTypeResponse accountType
 ) {
 }

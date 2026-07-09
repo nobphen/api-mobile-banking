@@ -4,6 +4,7 @@ package com.phen.mbanking.features.accounttype;
 import com.phen.mbanking.features.account.dto.AccountResponse;
 import com.phen.mbanking.features.accounttype.dto.AccountTypeRequest;
 import com.phen.mbanking.features.accounttype.dto.AccountTypeResponse;
+import com.phen.mbanking.features.accounttype.dto.AccountTypeUpdateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/accountTypes")
+@RequestMapping("/api/v1/account-types")
 
 @RequiredArgsConstructor
 public class AccountTypeController {
@@ -58,23 +59,23 @@ public class AccountTypeController {
     /**
      * Update account type
      *
-     * @param id                 of account type id
+     * @param alias              of account type alias
      * @param accountTypeRequest {@link AccountTypeRequest}
      * @return {@link AccountTypeResponse}
      */
-    @PutMapping("/{id}")
-    AccountTypeResponse updateAccountType(@Valid @PathVariable Integer id,@RequestBody AccountTypeRequest accountTypeRequest) {
-        return accountTypeService.updateAccountType(id, accountTypeRequest);
+    @PatchMapping("/{alias}")
+    AccountTypeResponse updateAccountTypeByAlias(@PathVariable String alias, @RequestBody AccountTypeUpdateRequest accountTypeUpdateRequest) {
+        return accountTypeService.updateAccountTypeByAlias(alias, accountTypeUpdateRequest);
     }
 
 
     /**
      * Delete Account Type (Soft Delete)
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{alias}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteAccountType(@PathVariable Integer id) {
-        accountTypeService.delectAccountType(id);
+    public void deleteAccountType(@PathVariable String alias) {
+        accountTypeService.delectAccountTypeByAlias(alias);
     }
 
 }

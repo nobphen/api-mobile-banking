@@ -10,7 +10,6 @@ public record AccountTypeRequest(
         @NotBlank(message = "Name is required ")
         String name,
 
-        @NotBlank(message = "Description is required")
         String description
 ) {
 }

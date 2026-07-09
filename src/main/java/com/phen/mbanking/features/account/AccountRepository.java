@@ -22,17 +22,7 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
      * Find account no.
      * SQL:
      * SELECT * FROM tb_accounts
-     * WHERE isHidden = false;
+     * WHERE accountNo = ?
      */
-    List<Account> findAllByIsHiddenFalse();
-
-
-    /**
-     * Find account no.
-     * SQL:
-     * SELECT * FROM tb_accounts
-     * WHERE id = ?
-     * AND isHidden = false;
-     */
-    Optional<Account> findByAccountNoAndIsHiddenFalse(String accountNo);
+    Optional<Account> findByAccountNo(String accountNo);
 }
