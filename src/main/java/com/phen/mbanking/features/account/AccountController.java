@@ -2,7 +2,9 @@ package com.phen.mbanking.features.account;
 
 
 import com.phen.mbanking.features.account.dto.AccountCreateRequest;
+import com.phen.mbanking.features.account.dto.AccountRenameRequest;
 import com.phen.mbanking.features.account.dto.AccountResponse;
+import com.phen.mbanking.features.account.dto.AccountTransferLimitRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,14 +37,15 @@ public class AccountController {
 
     /**
      * Find all account
+     *
      * @param pageNumber is current page request from client
-     * @param pageSize is size record per page from client
+     * @param pageSize   is size record per page from client
      * @return {@link List<AccountResponse>}
      */
     @GetMapping
     Page<AccountResponse> findAll(
-            @RequestParam(required = false,defaultValue = "0") int pageNumber,
-            @RequestParam(required = false,defaultValue = "15") int pageSize
+            @RequestParam(required = false, defaultValue = "0") int pageNumber,
+            @RequestParam(required = false, defaultValue = "15") int pageSize
     ) {
         return accountService.findAll(pageNumber, pageSize);
     }
@@ -54,7 +57,54 @@ public class AccountController {
      * @return {@link AccountResponse}
      */
     @GetMapping("/{accountNo}")
-    AccountResponse findByAccountNo(@PathVariable String accountNo) {
+    AccountResponse findByAccountNo(@PathVariable("accountNo") String accountNo) {
         return accountService.findByAccountNo(accountNo);
+    }
+
+
+    /**
+     * Rename account
+     *
+     * @param accountNo of account
+     * @return {@link AccountResponse}
+     */
+
+    @PutMapping("/{accountNo}/rename")
+    AccountResponse renameAccount(@PathVariable("accountNo") String accountNo, @Valid @RequestBody AccountRenameRequest accountRenameRequest) {
+
+        return accountService.renameAccount(accountNo, accountRenameRequest);
+    }
+
+    /**
+     * Hide account
+     *
+     * @param accountNo of account
+     */
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/{accountNo}/hide-account")
+    void hideAccount(@PathVariable("accountNo") String accountNo) {
+        accountService.hideAccount(accountNo);
+    }
+
+    /**
+     * Hide account
+     *
+     * @param accountNo of account
+     */
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/{accountNo}/transfer-limit")
+    void updateTransferLimitAccount(
+            @PathVariable("accountNo") String accountNo,
+            @Valid @RequestBody AccountTransferLimitRequest accountTransferLimitRequest
+    ) {
+        accountService.updateTransferLimitAccount(accountNo, accountTransferLimitRequest);
+    }
+
+    @DeleteMapping("/{accountNo}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delectAccount(@PathVariable String accountNo) {
+        accountService.delectAccount(accountNo);
     }
 }

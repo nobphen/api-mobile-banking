@@ -25,6 +25,7 @@ public class Account {
     private BigDecimal balance;
     private BigDecimal transferLimit;
     private Boolean isHidden;
+    private Boolean isDeleted;
 
     @ManyToOne
     private AccountType accountType;
