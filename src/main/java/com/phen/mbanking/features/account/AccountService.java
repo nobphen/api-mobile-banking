@@ -1,9 +1,6 @@
 package com.phen.mbanking.features.account;
 
-import com.phen.mbanking.features.account.dto.AccountCreateRequest;
-import com.phen.mbanking.features.account.dto.AccountRenameRequest;
-import com.phen.mbanking.features.account.dto.AccountResponse;
-import com.phen.mbanking.features.account.dto.AccountTransferLimitRequest;
+import com.phen.mbanking.features.account.dto.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -62,6 +59,14 @@ public interface AccountService {
      */
     void updateTransferLimitAccount(String accountNo, AccountTransferLimitRequest accountTransferLimitRequest);
 
+
+    /**
+     * Update account
+     * @param accountNo of account
+     * @param accountUpdateRequest {@link AccountUpdateRequest}
+     * @return {@link AccountResponse}
+     */
+    AccountResponse updateAccountByAlias(String alias,AccountUpdateRequest accountUpdateRequest);
 
     /**
      * Delete account

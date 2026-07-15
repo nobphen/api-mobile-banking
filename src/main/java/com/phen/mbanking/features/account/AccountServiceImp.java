@@ -3,10 +3,7 @@ package com.phen.mbanking.features.account;
 import com.phen.mbanking.domain.Account;
 import com.phen.mbanking.domain.AccountType;
 import com.phen.mbanking.domain.User;
-import com.phen.mbanking.features.account.dto.AccountCreateRequest;
-import com.phen.mbanking.features.account.dto.AccountRenameRequest;
-import com.phen.mbanking.features.account.dto.AccountResponse;
-import com.phen.mbanking.features.account.dto.AccountTransferLimitRequest;
+import com.phen.mbanking.features.account.dto.*;
 import com.phen.mbanking.features.accounttype.AccountTypeRepository;
 import com.phen.mbanking.features.user.UserRepository;
 import com.phen.mbanking.mapper.AccountMapper;
@@ -43,37 +40,21 @@ public class AccountServiceImp implements AccountService {
     public AccountResponse createNewAccount(AccountCreateRequest accountCreateRequest) {
 
         // Validate account type
-        AccountType accountType = accountTypeRepository.findByAlias(accountCreateRequest.accountTypeAlias()).orElseThrow(
-                () -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Account type has not been found"
-                )
-        );
+        AccountType accountType = accountTypeRepository.findByAlias(accountCreateRequest.accountTypeAlias()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account type has not been found"));
 
 
         // Validate user
-        User user = userRepository.findByUuid(accountCreateRequest.userUuid()).orElseThrow(
-                () -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "User has not been found"
-                )
-        );
+        User user = userRepository.findByUuid(accountCreateRequest.userUuid()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User has not been found"));
 
         // Validate account no
         if (accountRepository.existsByAccountNoAndIsHiddenFalse(accountCreateRequest.accountNo())) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Account no has already been existed"
-            );
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Account no has already been existed");
         }
 
 
         // Validate balance
         if (accountCreateRequest.balance().compareTo(BigDecimal.valueOf(10)) < 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Balance 10$ is required to create account"
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Balance 10$ is required to create account");
         }
 
 
@@ -134,11 +115,7 @@ public class AccountServiceImp implements AccountService {
         // Validate account no
         Account account = accountRepository.findByAccountNo(accountNo).orElseThrow(
 
-                () -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Account has not been found"
-                )
-        );
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account has not been found"));
 
         return accountMapper.toAccountResponse(account);
     }
@@ -155,12 +132,7 @@ public class AccountServiceImp implements AccountService {
     public AccountResponse renameAccount(String accountNo, AccountRenameRequest accountRenameRequest) {
 
         // Validate account no
-        Account account = accountRepository.findByAccountNo(accountNo).orElseThrow(
-                () -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Account has not been found"
-                )
-        );
+        Account account = accountRepository.findByAccountNo(accountNo).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account has not been found"));
 
         // Set update alias
         account.setAlias(accountRenameRequest.alias());
@@ -182,12 +154,7 @@ public class AccountServiceImp implements AccountService {
     public void hideAccount(String accountNo) {
 
         // validate account no
-        Account account = accountRepository.findByAccountNo(accountNo).orElseThrow(
-                () -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Account has not been found"
-                )
-        );
+        Account account = accountRepository.findByAccountNo(accountNo).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account has not been found"));
 
         // Set update data
         account.setIsHidden(true);
@@ -199,12 +166,7 @@ public class AccountServiceImp implements AccountService {
     @Override
     public void updateTransferLimitAccount(String accountNo, AccountTransferLimitRequest accountTransferLimitRequest) {
         // validate account no
-        Account account = accountRepository.findByAccountNo(accountNo).orElseThrow(
-                () -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Account has not been found"
-                )
-        );
+        Account account = accountRepository.findByAccountNo(accountNo).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account has not been found"));
 
         // Set update
         account.setTransferLimit(accountTransferLimitRequest.amount());
@@ -213,19 +175,51 @@ public class AccountServiceImp implements AccountService {
         accountRepository.save(account);
     }
 
+
+    /**
+     * Update account
+     *
+     * @param accountNo            of account
+     * @param accountUpdateRequest {@link AccountUpdateRequest}
+     * @return {@link AccountResponse}
+     */
+    @Override
+    public AccountResponse updateAccountByAlias(String alias, AccountUpdateRequest accountUpdateRequest) {
+
+        // Validate alias
+        Account account = accountRepository.findByAliasAndIsDeletedFalse(alias).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account type has not been found"));
+
+
+        // Validate account no
+        if (accountUpdateRequest.accountNo() != null && !accountUpdateRequest.accountNo().equals(account.getAccountNo()) && accountRepository.existsByAccountNoAndIsHiddenFalse(accountUpdateRequest.accountNo())) {
+
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Account number already exists");
+        }
+
+
+        // Validate balance
+        if (accountUpdateRequest.balance() != null && accountUpdateRequest.balance().compareTo(BigDecimal.valueOf(10)) < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Balance 10$ is required to create account");
+        }
+
+        // Call partially map
+        accountMapper.fromAccountUpdateRequest(accountUpdateRequest, account);
+
+        account = accountRepository.save(account);
+
+
+        return accountMapper.toAccountResponse(account);
+    }
+
     /**
      * Delete account
+     *
      * @param accountNo of account
      */
     @Override
     public void delectAccount(String accountNo) {
         // validate account no
-        Account account = accountRepository.findByAccountNo(accountNo).orElseThrow(
-                () -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Account has not been found"
-                )
-        );
+        Account account = accountRepository.findByAccountNo(accountNo).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account has not been found"));
 
         // Set update data
         account.setIsDeleted(true);

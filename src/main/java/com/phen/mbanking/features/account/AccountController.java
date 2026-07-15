@@ -1,10 +1,7 @@
 package com.phen.mbanking.features.account;
 
 
-import com.phen.mbanking.features.account.dto.AccountCreateRequest;
-import com.phen.mbanking.features.account.dto.AccountRenameRequest;
-import com.phen.mbanking.features.account.dto.AccountResponse;
-import com.phen.mbanking.features.account.dto.AccountTransferLimitRequest;
+import com.phen.mbanking.features.account.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -102,6 +99,17 @@ public class AccountController {
         accountService.updateTransferLimitAccount(accountNo, accountTransferLimitRequest);
     }
 
+
+    @PatchMapping("/{alias}")
+    AccountResponse updateAccountByAlias(@PathVariable String alias, @RequestBody AccountUpdateRequest accountUpdateRequest){
+        return  accountService.updateAccountByAlias(alias,accountUpdateRequest);
+    }
+
+
+    /**
+     * Delete account
+     * @param accountNo of account
+     */
     @DeleteMapping("/{accountNo}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delectAccount(@PathVariable String accountNo) {

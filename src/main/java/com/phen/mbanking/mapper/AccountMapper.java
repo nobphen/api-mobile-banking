@@ -3,11 +3,15 @@ package com.phen.mbanking.mapper;
 import com.phen.mbanking.domain.Account;
 import com.phen.mbanking.features.account.dto.AccountCreateRequest;
 import com.phen.mbanking.features.account.dto.AccountResponse;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import com.phen.mbanking.features.account.dto.AccountUpdateRequest;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
+
+    // Partially map
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void fromAccountUpdateRequest(AccountUpdateRequest accountUpdateRequest, @MappingTarget Account account);
 
     /// Map account to AccountResponse
 

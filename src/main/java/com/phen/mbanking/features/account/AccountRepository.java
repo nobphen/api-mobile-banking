@@ -25,4 +25,14 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
      * WHERE accountNo = ?
      */
     Optional<Account> findByAccountNo(String accountNo);
+
+
+    /**
+     * Find alias
+     * SQL:
+     * SELECT * FROM tb_accounts
+     * WHERE alias = ?
+     * AND isDelete = false
+     */
+    Optional<Account> findByAliasAndIsDeletedFalse(String alias);
 }
