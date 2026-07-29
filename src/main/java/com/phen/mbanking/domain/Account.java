@@ -35,7 +35,7 @@ public class Account {
 
     @ManyToOne
     @JoinTable(
-            name = "user_accounts",
+            name = "tb_user_accounts",
             joinColumns = @JoinColumn(name = "account_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id")
     )

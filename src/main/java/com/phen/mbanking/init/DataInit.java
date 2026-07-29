@@ -2,8 +2,10 @@ package com.phen.mbanking.init;
 
 
 import com.phen.mbanking.domain.AccountType;
+import com.phen.mbanking.domain.Role;
 import com.phen.mbanking.domain.User;
 import com.phen.mbanking.features.accounttype.AccountTypeRepository;
+import com.phen.mbanking.features.user.RoleRepository;
 import com.phen.mbanking.features.user.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ public class DataInit {
 
     private final UserRepository userRepository;
     private final AccountTypeRepository accountTypeRepository;
+    private final RoleRepository roleRepository;
 
 
     @PostConstruct
@@ -49,19 +52,35 @@ public class DataInit {
 
         if (userRepository.count() == 0) {
 
-            User user = new User();
+            Role user = new Role();
+            user.setName("USRE");
 
-            user.setUuid(UUID.randomUUID().toString());
-            user.setName("Nob Phen");
-            user.setGender("Male");
-            user.setPhoneNumber("0969530336");
-            user.setPin("1234");
-            user.setPassword("qwer");
-            user.setNationalCardId("123456789");
-            user.setProfileImage("user/avatar.png");
-            user.setStudentCardId("RUPP-000001");
-            user.setIsDeleted(false);
-            user.setIsBlocked(false);
+
+            Role customer = new Role();
+            customer.setName("CUSTOMER");
+
+            Role  manager = new Role();
+            manager.setName("MANAGER");
+
+            Role   admin = new Role();
+            admin.setName("ADMIN");
+
+            roleRepository.saveAll(List.of(user,customer,manager,admin));
+
+
+            User user1 = new User();
+
+            user1.setUuid(UUID.randomUUID().toString());
+            user1.setName("Nob Phen");
+            user1.setGender("Male");
+            user1.setPhoneNumber("0969530336");
+            user1.setPin("1234");
+            user1.setPassword("qwer");
+            user1.setNationalCardId("123456789");
+            user1.setProfileImage("user/avatar.png");
+            user1.setStudentCardId("RUPP-000001");
+            user1.setIsDeleted(false);
+            user1.setIsBlocked(false);
 
             User user2 = new User();
 
@@ -80,7 +99,7 @@ public class DataInit {
             //userRepository.save(user);
             //userRepository.save(user2);
 
-            userRepository.saveAll(List.of(user, user2));
+            userRepository.saveAll(List.of(user1, user2));
         }
 
     }
