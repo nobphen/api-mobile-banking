@@ -9,6 +9,7 @@ import com.phen.mbanking.features.user.RoleRepository;
 import com.phen.mbanking.features.user.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class DataInit {
     private final UserRepository userRepository;
     private final AccountTypeRepository accountTypeRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     @PostConstruct
@@ -53,19 +55,19 @@ public class DataInit {
         if (userRepository.count() == 0) {
 
             Role user = new Role();
-            user.setName("USRE");
+            user.setName("USER");
 
 
             Role customer = new Role();
             customer.setName("CUSTOMER");
 
-            Role  manager = new Role();
+            Role manager = new Role();
             manager.setName("MANAGER");
 
-            Role   admin = new Role();
+            Role admin = new Role();
             admin.setName("ADMIN");
 
-            roleRepository.saveAll(List.of(user,customer,manager,admin));
+            roleRepository.saveAll(List.of(user, customer, manager, admin));
 
 
             User user1 = new User();
@@ -75,12 +77,13 @@ public class DataInit {
             user1.setGender("Male");
             user1.setPhoneNumber("0969530336");
             user1.setPin("1234");
-            user1.setPassword("qwer");
+            user1.setPassword(passwordEncoder.encode("qwer"));
             user1.setNationalCardId("123456789");
             user1.setProfileImage("user/avatar.png");
             user1.setStudentCardId("RUPP-000001");
             user1.setIsDeleted(false);
             user1.setIsBlocked(false);
+            user1.setRoles(List.of(user, admin));
 
             User user2 = new User();
 
@@ -89,17 +92,33 @@ public class DataInit {
             user2.setGender("Male");
             user2.setPhoneNumber("0969530337");
             user2.setPin("1234");
-            user2.setPassword("qwer");
-            user2.setNationalCardId("88889999");
+            user2.setPassword(passwordEncoder.encode("qwer"));
+            user2.setNationalCardId("88889990");
             user2.setProfileImage("user/avatar.png");
             user2.setIsDeleted(false);
             user2.setIsBlocked(false);
+            user2.setRoles(List.of(user, manager));
+
+
+            User user3 = new User();
+
+            user3.setUuid(UUID.randomUUID().toString());
+            user3.setName("CR7");
+            user3.setGender("Male");
+            user3.setPhoneNumber("0969530338");
+            user3.setPin("7777");
+            user3.setPassword(passwordEncoder.encode("qwer"));
+            user3.setNationalCardId("88889991");
+            user3.setProfileImage("user/avatar.png");
+            user3.setIsDeleted(false);
+            user3.setIsBlocked(false);
+            user3.setRoles(List.of(user, customer));
 
 
             //userRepository.save(user);
             //userRepository.save(user2);
 
-            userRepository.saveAll(List.of(user1, user2));
+            userRepository.saveAll(List.of(user1, user2, user3));
         }
 
     }
