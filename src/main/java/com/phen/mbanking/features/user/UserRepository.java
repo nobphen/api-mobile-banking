@@ -5,7 +5,37 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository <User,Integer> {
+public interface UserRepository extends JpaRepository<User, Integer> {
+
+
+    /**
+     * Find by national card id
+     * SQL :
+     * SELECT EXISTS
+     * SELECT * FORM tb_user
+     * WHERE national_card_id = ?
+     */
+    Boolean existsByNationalCardId(String nationalCardId);
+
+    /**
+     * Find by email
+     * SQL :
+     *  SELECT EXISTS
+     * SELECT * FORM tb_user
+     * WHERE email = ?
+     */
+
+    Boolean existsByEmail(String email);
+
+
+    /**
+     * Find by phone number
+     * SQL :
+     *  SELECT EXISTS
+     * SELECT * FORM tb_user
+     * WHERE phone_number = ?
+     */
+    Boolean existsByPhoneNumber(String phoneNumber);
 
 
     /**
@@ -15,8 +45,7 @@ public interface UserRepository extends JpaRepository <User,Integer> {
      * WHERE phoneNumber = ?
      * AND isDeleted = false ;
      */
-    Optional<User> findByPhoneNumberAndIsDeletedFalse (String phoneNumber);
-
+    Optional<User> findByPhoneNumberAndIsDeletedFalse(String phoneNumber);
 
 
     /**
