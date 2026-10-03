@@ -63,6 +63,7 @@ public class User {
 
     private Boolean isDeleted;
     private Boolean isBlocked;
+    private  Boolean isVerified;
 
 
     @OneToMany(mappedBy = "user")

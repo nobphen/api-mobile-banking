@@ -110,4 +110,9 @@ public class AuthServiceImp implements AuthService {
         //return  userMapper.toRegisterResponse(user);
 
     }
+
+    @Override
+    public void sendVerification(String email) {
+
+    }
 }

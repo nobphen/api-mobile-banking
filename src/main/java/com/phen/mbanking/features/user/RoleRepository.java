@@ -6,9 +6,9 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface RoleRepository extends JpaRepository<Role,Integer> {
 
-   /// JPQL : Jakarta Persistent Query Language
+   /// JPQL : Jakarta Persistence Query Language
    @Query("""
-    SELECT r.name
+    SELECT r
     FROM Role r
     WHERE r.name = 'USER'
     """)
@@ -16,7 +16,7 @@ public interface RoleRepository extends JpaRepository<Role,Integer> {
 
 
    @Query("""
-    SELECT r.name
+    SELECT r
     FROM Role r
     WHERE r.name = 'CUSTOMER'
     """)

@@ -8,8 +8,10 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
+    /// style 1
     User fromRegisterRequest(RegisterRequest registerRequest);
 
+    /// style 2
     @Mapping(target = "message", constant  = "You have register successfully,please verify email")
     @Mapping(target = "email", source = "user.email")
     RegisterResponse toRegisterResponse (User user);

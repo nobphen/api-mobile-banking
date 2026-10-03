@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 public record RegisterRequest(
 
         @NotBlank(message = "Phone number is required")
-        @Size(min = 9,max = 10,message = "Phone number must be between 9 to 10 digits")
+        @Size(min = 9, max = 10, message = "Phone number must be between 9 to 10 digits")
         String phoneNumber,
 
         @NotBlank(message = "Email is required")
@@ -20,11 +20,17 @@ public record RegisterRequest(
         String pin,
 
         @NotBlank(message = "Password is required")
-        @Pattern(regexp="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$") // Regular Expression
+        @Pattern(
+                regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$",
+                message = "Password must contain minimum 8 characters in length, at least one uppercase English letter, at least one lowercase English letter, at least one digit, at least one special character."
+        )
         String password,
 
-        @NotBlank(message = "Confirmed password number is required")
-        @Pattern(regexp="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$") // Regular Expression
+        @NotBlank(message = "Confirmed password is required")
+        @Pattern(
+                regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$",
+                message = "Confirmed password must contain minimum 8 characters in length, at least one uppercase English letter, at least one lowercase English letter, at least one digit, at least one special character."
+        )
         String confirmedPassword,
 
         @NotBlank(message = "National card id is required")

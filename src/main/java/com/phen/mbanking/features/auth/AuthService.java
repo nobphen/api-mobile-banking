@@ -11,4 +11,8 @@ public interface AuthService {
      * @return {@link  RegisterResponse}
      */
     RegisterResponse register(RegisterRequest registerRequest);
+
+
+    void  sendVerification(String email);
+
 }
