@@ -2,18 +2,27 @@ package com.phen.mbanking.features.auth;
 
 import com.phen.mbanking.domain.Role;
 import com.phen.mbanking.domain.User;
+import com.phen.mbanking.domain.UserVerification;
 import com.phen.mbanking.features.auth.dto.RegisterRequest;
 import com.phen.mbanking.features.auth.dto.RegisterResponse;
+import com.phen.mbanking.features.auth.dto.VerificationRequest;
 import com.phen.mbanking.features.user.RoleRepository;
 import com.phen.mbanking.features.user.UserRepository;
 import com.phen.mbanking.mapper.UserMapper;
+import com.phen.mbanking.util.RandomUtil;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +34,14 @@ public class AuthServiceImp implements AuthService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+
+    private final UserVerificationRepository userVerificationRepository;
+
+    private final JavaMailSender javaMailSender;
+
+    /// inject mail
+    @Value("${spring.mail.username}")
+    private String emailAdmin;
 
     /**
      * Register
@@ -86,6 +103,7 @@ public class AuthServiceImp implements AuthService {
         user.setProfileImage("profile/default-user.png");
         user.setIsDeleted(false);
         user.setIsBlocked(false);
+        user.setIsVerified(false);
 
 
         /// Find role
@@ -112,7 +130,42 @@ public class AuthServiceImp implements AuthService {
     }
 
     @Override
-    public void sendVerification(String email) {
+    public void verify(VerificationRequest verificationRequest) {
 
     }
+
+    @Override
+    public void sendVerification(String email) throws MessagingException {
+
+        /// Validate email
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "User has been not found"
+        ));
+
+
+        /// Save data to tb_userVerification
+        UserVerification userVerification = new UserVerification();
+        userVerification.setUser(user);
+
+        userVerification.setVerifiedCode(RandomUtil.random6Digits());
+        userVerification.setExpiryTime(LocalTime.now().plusMinutes(1));
+
+        /// Save data
+        userVerificationRepository.save(userVerification);
+
+
+        /// Prepare email for sending
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        helper.setTo(email);
+        helper.setFrom(emailAdmin);
+        helper.setSubject("User Verification");
+        helper.setText(userVerification.getVerifiedCode());
+
+        javaMailSender.send(message);
+
+    }
+
 }

@@ -7,6 +7,15 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
 
+    /**
+     * Find by email
+     * SQL :
+     * SELECT * FORM tb_user
+     * WHERE email = ?
+     */
+    Optional<User> findByEmail (String email);
+
+
 
     /**
      * Find by national card id

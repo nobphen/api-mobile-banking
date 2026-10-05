@@ -4,6 +4,8 @@ import com.phen.mbanking.features.account.dto.AccountCreateRequest;
 import com.phen.mbanking.features.account.dto.AccountResponse;
 import com.phen.mbanking.features.auth.dto.RegisterRequest;
 import com.phen.mbanking.features.auth.dto.RegisterResponse;
+import com.phen.mbanking.features.auth.dto.SendVerificationRequest;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,18 +19,25 @@ public class AuthController {
     private final AuthService authService;
 
 
-
     /**
-     * Create new account
+     * Create new user
      *
      * @param registerRequest {@link  RegisterRequest}
      * @return {@link RegisterResponse}
      */
 
-    @ResponseStatus(HttpStatus.ACCEPTED)
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/register")
     RegisterResponse register(@Valid @RequestBody RegisterRequest registerRequest) {
         return authService.register(registerRequest);
     }
+
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/send-verification")
+    void sendVerification(@Valid @RequestBody SendVerificationRequest sendVerificationRequest) throws MessagingException {
+        authService.sendVerification(sendVerificationRequest.email());
+    }
+
 
 }
