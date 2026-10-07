@@ -5,6 +5,7 @@ import com.phen.mbanking.features.account.dto.AccountResponse;
 import com.phen.mbanking.features.auth.dto.RegisterRequest;
 import com.phen.mbanking.features.auth.dto.RegisterResponse;
 import com.phen.mbanking.features.auth.dto.SendVerificationRequest;
+import com.phen.mbanking.features.auth.dto.VerificationRequest;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,5 +40,10 @@ public class AuthController {
         authService.sendVerification(sendVerificationRequest.email());
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/verify")
+    void verify(@Valid @RequestBody VerificationRequest verificationRequest) {
+        authService.verify(verificationRequest);
+    }
 
 }

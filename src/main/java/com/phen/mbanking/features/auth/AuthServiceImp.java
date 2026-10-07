@@ -43,6 +43,80 @@ public class AuthServiceImp implements AuthService {
     @Value("${spring.mail.username}")
     private String emailAdmin;
 
+
+    @Override
+    public void verify(VerificationRequest verificationRequest) {
+
+        /// Validate email
+        User user = userRepository
+                .findByEmail(verificationRequest.email())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User has not found"
+                ));
+
+        /// Validate verified code
+        UserVerification userVerification = userVerificationRepository
+                .findByUserAndVerifiedCode(user, verificationRequest.verifiedCode())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User verification has not found"
+                ));
+
+        /// Validate code verified expired
+        if (LocalTime.now().isAfter(userVerification.getExpiryTime())) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Verification code has expired"
+            );
+        }
+
+        /// Save
+        user.setIsVerified(true);
+        userRepository.save(user);
+        userVerificationRepository.delete(userVerification);
+
+    }
+
+    @Override
+    public void sendVerification(String email) throws MessagingException {
+
+        /// Validate email
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "User has been not found"
+        ));
+
+        /// Find existing verification
+        UserVerification userVerification = userVerificationRepository
+                .findByUser(user)
+                .orElseGet(UserVerification::new);
+
+
+        /// Save data to tb_userVerification
+        userVerification.setUser(user);
+
+        userVerification.setVerifiedCode(RandomUtil.random6Digits());
+        userVerification.setExpiryTime(LocalTime.now().plusMinutes(1));
+
+        /// Save data
+        userVerificationRepository.save(userVerification);
+
+
+        /// Prepare email for sending
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        helper.setTo(email);
+        helper.setFrom(emailAdmin);
+        helper.setSubject("User Verification");
+        helper.setText(userVerification.getVerifiedCode());
+
+        javaMailSender.send(message);
+
+    }
+
+
     /**
      * Register
      *
@@ -129,43 +203,5 @@ public class AuthServiceImp implements AuthService {
 
     }
 
-    @Override
-    public void verify(VerificationRequest verificationRequest) {
-
-    }
-
-    @Override
-    public void sendVerification(String email) throws MessagingException {
-
-        /// Validate email
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "User has been not found"
-        ));
-
-
-        /// Save data to tb_userVerification
-        UserVerification userVerification = new UserVerification();
-        userVerification.setUser(user);
-
-        userVerification.setVerifiedCode(RandomUtil.random6Digits());
-        userVerification.setExpiryTime(LocalTime.now().plusMinutes(1));
-
-        /// Save data
-        userVerificationRepository.save(userVerification);
-
-
-        /// Prepare email for sending
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message);
-
-        helper.setTo(email);
-        helper.setFrom(emailAdmin);
-        helper.setSubject("User Verification");
-        helper.setText(userVerification.getVerifiedCode());
-
-        javaMailSender.send(message);
-
-    }
 
 }
