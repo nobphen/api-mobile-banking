@@ -3,9 +3,7 @@ package com.phen.mbanking.features.auth;
 import com.phen.mbanking.domain.Role;
 import com.phen.mbanking.domain.User;
 import com.phen.mbanking.domain.UserVerification;
-import com.phen.mbanking.features.auth.dto.RegisterRequest;
-import com.phen.mbanking.features.auth.dto.RegisterResponse;
-import com.phen.mbanking.features.auth.dto.VerificationRequest;
+import com.phen.mbanking.features.auth.dto.*;
 import com.phen.mbanking.features.user.RoleRepository;
 import com.phen.mbanking.features.user.UserRepository;
 import com.phen.mbanking.mapper.UserMapper;
@@ -22,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.awt.image.RasterFormatException;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
@@ -44,6 +43,65 @@ public class AuthServiceImp implements AuthService {
     private String emailAdmin;
 
 
+    @Override
+    public AuthResponse login(LoginRequest loginRequest) {
+        return null;
+    }
+
+
+    /**
+     * Resend verification
+     *
+     * @param email in tb_user
+     */
+    @Override
+    public void reSendVerification(String email) throws MessagingException {
+
+        /// Validate email
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "User has been not found"
+        ));
+
+        /// Find existing verification
+        UserVerification userVerification = userVerificationRepository
+                .findByUser(user)
+                .orElseThrow(
+                        ()-> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "User has not been found"
+                        )
+                );
+
+
+        /// Save data to tb_userVerification
+
+        userVerification.setVerifiedCode(RandomUtil.random6Digits());
+        userVerification.setExpiryTime(LocalTime.now().plusMinutes(1));
+
+        /// Save data
+        userVerificationRepository.save(userVerification);
+
+
+        /// Prepare email for sending
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        helper.setTo(email);
+        helper.setFrom(emailAdmin);
+        helper.setSubject("User Verification");
+        helper.setText(userVerification.getVerifiedCode());
+
+        javaMailSender.send(message);
+
+    }
+
+
+    /**
+     * Verify
+     *
+     * @param verificationRequest {@link VerificationRequest}
+     */
     @Override
     public void verify(VerificationRequest verificationRequest) {
 
@@ -78,6 +136,12 @@ public class AuthServiceImp implements AuthService {
 
     }
 
+
+    /**
+     * Send verified
+     *
+     * @param email in tb_user
+     */
     @Override
     public void sendVerification(String email) throws MessagingException {
 
@@ -88,9 +152,7 @@ public class AuthServiceImp implements AuthService {
         ));
 
         /// Find existing verification
-        UserVerification userVerification = userVerificationRepository
-                .findByUser(user)
-                .orElseGet(UserVerification::new);
+        UserVerification userVerification = new UserVerification();
 
 
         /// Save data to tb_userVerification

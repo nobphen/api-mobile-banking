@@ -1,11 +1,25 @@
 package com.phen.mbanking.features.auth;
 
-import com.phen.mbanking.features.auth.dto.RegisterRequest;
-import com.phen.mbanking.features.auth.dto.RegisterResponse;
-import com.phen.mbanking.features.auth.dto.VerificationRequest;
+import com.phen.mbanking.features.auth.dto.*;
 import jakarta.mail.MessagingException;
 
 public interface AuthService {
+
+
+    /**
+     * Login
+     * @param loginRequest  {@link LoginRequest}
+     * @return {@link AuthResponse}
+     */
+    AuthResponse login(LoginRequest loginRequest);
+
+
+    /**
+     * Resend mail
+     *
+     * @param email in tb_user
+     */
+    void reSendVerification(String email) throws MessagingException;
 
 
     /**
