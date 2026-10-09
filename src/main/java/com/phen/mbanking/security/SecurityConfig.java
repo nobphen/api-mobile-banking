@@ -94,16 +94,16 @@ public class SecurityConfig {
         /// Endpoint Security Config
         http.authorizeHttpRequests(endpoint -> endpoint
                 .requestMatchers(HttpMethod.POST,"/api/v1/auth/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/accounts/**").hasAnyRole("USER")
-                .requestMatchers(HttpMethod.GET, "/api/v1/accounts/**").hasAnyRole("USER")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/accounts/**").hasAnyRole("USER")
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/accounts/**").hasAnyRole("USER")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/accounts/**").hasAnyRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/v1/account-types/**").hasAnyRole("MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/account-types/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/v1/account-types/**").hasAnyRole("USER")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/account-types/**").hasAnyRole("MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/account-types/**").hasAnyRole("MANAGER", "ADMIN")
+//                .requestMatchers(HttpMethod.POST, "/api/v1/accounts/**").hasAnyRole("USER")
+//                .requestMatchers(HttpMethod.GET, "/api/v1/accounts/**").hasAnyRole("USER")
+//                .requestMatchers(HttpMethod.PUT, "/api/v1/accounts/**").hasAnyRole("USER")
+//                .requestMatchers(HttpMethod.PATCH, "/api/v1/accounts/**").hasAnyRole("USER")
+//                .requestMatchers(HttpMethod.DELETE, "/api/v1/accounts/**").hasAnyRole("ADMIN")
+//                .requestMatchers(HttpMethod.POST, "/api/v1/account-types/**").hasAnyRole("MANAGER", "ADMIN")
+//                .requestMatchers(HttpMethod.DELETE, "/api/v1/account-types/**").hasRole("ADMIN")
+//                .requestMatchers(HttpMethod.GET, "/api/v1/account-types/**").hasAnyRole("USER")
+//                .requestMatchers(HttpMethod.PUT, "/api/v1/account-types/**").hasAnyRole("MANAGER", "ADMIN")
+//                .requestMatchers(HttpMethod.PATCH, "/api/v1/account-types/**").hasAnyRole("MANAGER", "ADMIN")
                 .anyRequest()
                 .authenticated()
         );
@@ -111,7 +111,11 @@ public class SecurityConfig {
 
         /// Security Mechanism ( HTTP Basic Auth )
         /// HTTP Basic Auth ( Username & Password)
-        http.httpBasic(Customizer.withDefaults());
+//        http.httpBasic(Customizer.withDefaults());
+
+
+        /// Security Mechanism ( JWT )
+        http.oauth2ResourceServer(jwt->jwt.jwt(Customizer.withDefaults()));
 
 
         /// Disable CSRF Token

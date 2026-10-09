@@ -11,22 +11,32 @@ import com.phen.mbanking.util.RandomUtil;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.awt.image.RasterFormatException;
+import java.time.Instant;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImp implements AuthService {
 
     private final UserRepository userRepository;
@@ -35,6 +45,9 @@ public class AuthServiceImp implements AuthService {
     private final PasswordEncoder passwordEncoder;
 
     private final UserVerificationRepository userVerificationRepository;
+
+    private final DaoAuthenticationProvider daoAuthenticationProvider;
+    private final JwtEncoder accessTokenJwtEndCoder;
 
     private final JavaMailSender javaMailSender;
 
@@ -45,7 +58,46 @@ public class AuthServiceImp implements AuthService {
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
-        return null;
+
+
+        /// Authentication client with username ( phoneNumber) and password
+        Authentication auth = new UsernamePasswordAuthenticationToken(loginRequest.phoneNumber(), loginRequest.password());
+
+        auth = daoAuthenticationProvider.authenticate(auth);
+
+
+        log.info("Auth {}", auth.getPrincipal());
+
+
+        /// Generate JWT token by JwtEndCode
+        /// 1. Define Jwt claimsSet (Payload)
+        Instant now = Instant.now();
+
+        JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
+                .id(auth.getName())
+                .subject("Access APIs")
+                .issuer(auth.getName())
+                .issuedAt(now)
+                .expiresAt(now.plus(30, ChronoUnit.MINUTES))
+                .audience(List.of("Android", "IOS"))
+                .claim("isAdmin", true)
+                .build();
+
+
+        /// 2. Generate token
+
+        String accessToken = accessTokenJwtEndCoder
+                .encode(JwtEncoderParameters.from(jwtClaimsSet)).
+                getTokenValue();
+
+
+        log.info("Access Token : {}", accessToken);
+
+        return AuthResponse.
+                builder()
+                .tokenTyp("Bearer")
+                .accessToken(accessToken)
+                .build();
     }
 
 
@@ -67,7 +119,7 @@ public class AuthServiceImp implements AuthService {
         UserVerification userVerification = userVerificationRepository
                 .findByUser(user)
                 .orElseThrow(
-                        ()-> new ResponseStatusException(
+                        () -> new ResponseStatusException(
                                 HttpStatus.NOT_FOUND,
                                 "User has not been found"
                         )

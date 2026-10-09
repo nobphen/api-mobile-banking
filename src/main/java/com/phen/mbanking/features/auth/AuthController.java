@@ -2,10 +2,7 @@ package com.phen.mbanking.features.auth;
 
 import com.phen.mbanking.features.account.dto.AccountCreateRequest;
 import com.phen.mbanking.features.account.dto.AccountResponse;
-import com.phen.mbanking.features.auth.dto.RegisterRequest;
-import com.phen.mbanking.features.auth.dto.RegisterResponse;
-import com.phen.mbanking.features.auth.dto.SendVerificationRequest;
-import com.phen.mbanking.features.auth.dto.VerificationRequest;
+import com.phen.mbanking.features.auth.dto.*;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +15,19 @@ import org.springframework.web.bind.annotation.*;
 
 public class AuthController {
     private final AuthService authService;
+
+
+    /**
+     * Login
+     *
+     * @param loginRequest {@link  LoginRequest}
+     * @return AuthResponse {@link  AuthResponse}
+     */
+
+    @PostMapping("/login")
+    AuthResponse login(@Valid @RequestBody LoginRequest loginRequest) {
+        return authService.login(loginRequest);
+    }
 
 
     /**
@@ -36,6 +46,7 @@ public class AuthController {
 
     /**
      * Send verification
+     *
      * @param sendVerificationRequest {@link  SendVerificationRequest}
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -47,6 +58,7 @@ public class AuthController {
 
     /**
      * Send verify
+     *
      * @param verificationRequest {@link  VerificationRequest}
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -57,6 +69,7 @@ public class AuthController {
 
     /**
      * Re Send verification
+     *
      * @param sendVerificationRequest {@link  SendVerificationRequest}
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
