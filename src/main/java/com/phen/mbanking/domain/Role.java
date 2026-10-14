@@ -31,6 +31,8 @@ public class Role implements GrantedAuthority {
 
     @Override
     public @Nullable String getAuthority() {
-        return "ROLE_" + name;
+
+        return name; // ADMIN
+       // return "ROLE_" + name; // ADMIN
     }
 }

@@ -7,6 +7,13 @@ public interface AuthService {
 
 
     /**
+     * Refresh token
+     * @param refreshTokenRequest {@link  RefreshTokenRequest}
+     * @return {@link AuthResponse}
+     */
+    AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
+
+    /**
      * Login
      * @param loginRequest  {@link LoginRequest}
      * @return {@link AuthResponse}

@@ -20,19 +20,26 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.awt.image.RasterFormatException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,11 +50,14 @@ public class AuthServiceImp implements AuthService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-
     private final UserVerificationRepository userVerificationRepository;
 
     private final DaoAuthenticationProvider daoAuthenticationProvider;
+    private final JwtAuthenticationProvider jwtAuthenticationProvider;
+
+
     private final JwtEncoder accessTokenJwtEndCoder;
+    private final JwtEncoder refreshTokenJwtEndCoder;
 
     private final JavaMailSender javaMailSender;
 
@@ -57,7 +67,84 @@ public class AuthServiceImp implements AuthService {
 
 
     @Override
+    public AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+
+        /// Refresh token
+        String refreshToken = refreshTokenRequest.refreshToken();
+
+        /// Authentication client with username ( phoneNumber) and password
+        Authentication auth = new BearerTokenAuthenticationToken(refreshToken);
+
+        auth =jwtAuthenticationProvider.authenticate(auth);
+
+
+        log.info("Auth {}",auth);
+
+
+        Jwt jwt = (Jwt) auth.getPrincipal();
+
+
+        /// Generate JWT token by JwtEndCode
+        /// 1. Define Jwt claimsSet (Payload)
+        Instant now = Instant.now();
+
+        /// jwt access claims set
+        assert jwt != null;
+        JwtClaimsSet jwtAccessClaimsSet = JwtClaimsSet
+                .builder()
+                .id(Objects.requireNonNull(jwt.getId()))
+                .subject("Access APIs")
+                .issuer(jwt.getId())
+                .issuedAt(now)
+                .expiresAt(now.plus(10, ChronoUnit.SECONDS))
+                .audience(Objects.requireNonNull(jwt.getAudience()))
+                .claim("isAdmin", true)
+                .claim("scope", Objects.requireNonNull(jwt.getClaimAsString("scope")))
+                .build();
+
+
+        /// 2. Generate access token
+        String accessToken = accessTokenJwtEndCoder.encode(JwtEncoderParameters.from(jwtAccessClaimsSet)).getTokenValue();
+
+
+        Instant expiredAt = jwt.getExpiresAt();
+        long remainingDay = Duration.between(now,expiredAt).toDays();
+
+        log.info("RemainingDay {}",remainingDay);
+
+        /// Check expired At <= 1 day
+        if(remainingDay <= 1){
+            /// jwt refresh claims set
+            JwtClaimsSet jwtRefreshClaimsSet = JwtClaimsSet
+                    .builder()
+                    .id(auth.getName())
+                    .subject("Refresh Token")
+                    .issuer(auth.getName())
+                    .issuedAt(now)
+                    .expiresAt(now.plus(7, ChronoUnit.DAYS))
+                    .audience(List.of("Android", "IOS"))
+                    .claim("scope", Objects.requireNonNull(jwt.getClaimAsString("scope")))
+                    .build();
+
+            /// 2. Generate refresh token
+             refreshToken = refreshTokenJwtEndCoder.encode(JwtEncoderParameters.from(jwtRefreshClaimsSet)).getTokenValue();
+        }
+
+
+
+
+        return AuthResponse.builder()
+                .tokenTyp("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    @Override
     public AuthResponse login(LoginRequest loginRequest) {
+
+        log.info("Access Token {} ",accessTokenJwtEndCoder);
+        log.info("Refresh Token {} ",refreshTokenJwtEndCoder);
 
 
         /// Authentication client with username ( phoneNumber) and password
@@ -68,35 +155,64 @@ public class AuthServiceImp implements AuthService {
 
         log.info("Auth {}", auth.getPrincipal());
 
+        auth.getAuthorities().forEach(grantedAuthority -> log.info("Authority {}", grantedAuthority.getAuthority()));
+
+        /// ROLE_USER ROLE_ADMIN
+        String scope = auth
+                .getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(" "));
+
+
+        log.info("scope {}",scope);
+
 
         /// Generate JWT token by JwtEndCode
         /// 1. Define Jwt claimsSet (Payload)
         Instant now = Instant.now();
 
-        JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
+        /// jwt access claims set
+        JwtClaimsSet jwtAccessClaimsSet = JwtClaimsSet
+                .builder()
                 .id(auth.getName())
                 .subject("Access APIs")
                 .issuer(auth.getName())
                 .issuedAt(now)
-                .expiresAt(now.plus(30, ChronoUnit.MINUTES))
+                .expiresAt(now.plus(10, ChronoUnit.SECONDS))
                 .audience(List.of("Android", "IOS"))
                 .claim("isAdmin", true)
+                .claim("scope",scope)
                 .build();
 
 
-        /// 2. Generate token
+        /// jwt refresh claims set
+        JwtClaimsSet jwtRefreshClaimsSet = JwtClaimsSet
+                .builder()
+                .id(auth.getName())
+                .subject("Refresh Token")
+                .issuer(auth.getName())
+                .issuedAt(now)
+                .expiresAt(now.plus(7, ChronoUnit.DAYS))
+                .audience(List.of("Android", "IOS"))
+                .claim("scope",scope)
+                .build();
 
-        String accessToken = accessTokenJwtEndCoder
-                .encode(JwtEncoderParameters.from(jwtClaimsSet)).
-                getTokenValue();
+        /// 2. Generate access token
+        String accessToken = accessTokenJwtEndCoder.encode(JwtEncoderParameters.from(jwtAccessClaimsSet)).getTokenValue();
+
+        /// 2. Generate refresh token
+        String refreshToken = refreshTokenJwtEndCoder.encode(JwtEncoderParameters.from(jwtRefreshClaimsSet)).getTokenValue();
 
 
         log.info("Access Token : {}", accessToken);
+        log.info("Refresh Token : {}", refreshToken);
 
-        return AuthResponse.
-                builder()
+        return AuthResponse
+                .builder()
                 .tokenTyp("Bearer")
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
@@ -110,20 +226,10 @@ public class AuthServiceImp implements AuthService {
     public void reSendVerification(String email) throws MessagingException {
 
         /// Validate email
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "User has been not found"
-        ));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User has been not found"));
 
         /// Find existing verification
-        UserVerification userVerification = userVerificationRepository
-                .findByUser(user)
-                .orElseThrow(
-                        () -> new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "User has not been found"
-                        )
-                );
+        UserVerification userVerification = userVerificationRepository.findByUser(user).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User has not been found"));
 
 
         /// Save data to tb_userVerification
@@ -158,27 +264,14 @@ public class AuthServiceImp implements AuthService {
     public void verify(VerificationRequest verificationRequest) {
 
         /// Validate email
-        User user = userRepository
-                .findByEmail(verificationRequest.email())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "User has not found"
-                ));
+        User user = userRepository.findByEmail(verificationRequest.email()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User has not found"));
 
         /// Validate verified code
-        UserVerification userVerification = userVerificationRepository
-                .findByUserAndVerifiedCode(user, verificationRequest.verifiedCode())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "User verification has not found"
-                ));
+        UserVerification userVerification = userVerificationRepository.findByUserAndVerifiedCode(user, verificationRequest.verifiedCode()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User verification has not found"));
 
         /// Validate code verified expired
         if (LocalTime.now().isAfter(userVerification.getExpiryTime())) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Verification code has expired"
-            );
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Verification code has expired");
         }
 
         /// Save
@@ -198,10 +291,7 @@ public class AuthServiceImp implements AuthService {
     public void sendVerification(String email) throws MessagingException {
 
         /// Validate email
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "User has been not found"
-        ));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User has been not found"));
 
         /// Find existing verification
         UserVerification userVerification = new UserVerification();
@@ -242,43 +332,28 @@ public class AuthServiceImp implements AuthService {
 
         /// Validate phone
         if (userRepository.existsByPhoneNumber(registerRequest.phoneNumber())) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Phone number is already been use"
-            );
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Phone number is already been use");
         }
 
         /// Validate email
         if (userRepository.existsByEmail(registerRequest.email())) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Email is already been user"
-            );
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already been user");
         }
 
 
         /// Validate user password
         if (!registerRequest.password().equals(registerRequest.confirmedPassword())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Password dest not match"
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password dest not match");
         }
 
         /// Validate national card id
         if (userRepository.existsByNationalCardId(registerRequest.nationalCardId())) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "National card id is already been use"
-            );
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "National card id is already been use");
         }
 
         /// Validate term and policy
         if (!registerRequest.acceptTerm()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "You must accept term"
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You must accept term");
         }
 
         /// Map data
@@ -305,11 +380,7 @@ public class AuthServiceImp implements AuthService {
 
 
         /// Style code 1
-        return RegisterResponse
-                .builder()
-                .message("You have register successfully,please verify email")
-                .email(user.getEmail())
-                .build();
+        return RegisterResponse.builder().message("You have register successfully,please verify email").email(user.getEmail()).build();
 
 
         /// Style code 2

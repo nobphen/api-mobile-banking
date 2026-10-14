@@ -79,4 +79,15 @@ public class AuthController {
     }
 
 
+    /**
+     * Refresh token
+     * @param refreshTokenRequest {@link RefreshTokenRequest}
+     * @return {@link  AuthResponse}
+     */
+    @PostMapping("/refresh-token")
+    AuthResponse refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest){
+        return authService.refreshToken(refreshTokenRequest);
+    }
+
+
 }

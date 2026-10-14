@@ -1,6 +1,7 @@
 package com.phen.mbanking.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,6 +14,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
@@ -78,6 +81,12 @@ public class SecurityConfig {
 //
 //    }
 
+
+    @Bean
+    JwtAuthenticationProvider configJwtAuthenticationProvider(@Qualifier("refreshTokenJwtDecoder") JwtDecoder refreshTokenJwtDecoder) {
+        return new JwtAuthenticationProvider(refreshTokenJwtDecoder);
+    }
+
     @Bean
     DaoAuthenticationProvider configDaoAuthenticationProvider() {
 
@@ -89,23 +98,27 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain configureApiSecurity(HttpSecurity http) {
+    SecurityFilterChain configureApiSecurity(HttpSecurity http, @Qualifier("accessTokenJwtDecoder") JwtDecoder jwtDecoder) {
 
         /// Endpoint Security Config
         http.authorizeHttpRequests(endpoint -> endpoint
-                .requestMatchers(HttpMethod.POST,"/api/v1/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/v1/upload/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/upload/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE,"/api/v1/upload/**").permitAll()
 //                .requestMatchers(HttpMethod.POST, "/api/v1/accounts/**").hasAnyRole("USER")
 //                .requestMatchers(HttpMethod.GET, "/api/v1/accounts/**").hasAnyRole("USER")
 //                .requestMatchers(HttpMethod.PUT, "/api/v1/accounts/**").hasAnyRole("USER")
 //                .requestMatchers(HttpMethod.PATCH, "/api/v1/accounts/**").hasAnyRole("USER")
 //                .requestMatchers(HttpMethod.DELETE, "/api/v1/accounts/**").hasAnyRole("ADMIN")
+
 //                .requestMatchers(HttpMethod.POST, "/api/v1/account-types/**").hasAnyRole("MANAGER", "ADMIN")
 //                .requestMatchers(HttpMethod.DELETE, "/api/v1/account-types/**").hasRole("ADMIN")
-//                .requestMatchers(HttpMethod.GET, "/api/v1/account-types/**").hasAnyRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/account-types/**").hasAuthority("SCOPE_USER")
 //                .requestMatchers(HttpMethod.PUT, "/api/v1/account-types/**").hasAnyRole("MANAGER", "ADMIN")
 //                .requestMatchers(HttpMethod.PATCH, "/api/v1/account-types/**").hasAnyRole("MANAGER", "ADMIN")
-                .anyRequest()
-                .authenticated()
+                        .anyRequest()
+                        .authenticated()
         );
 
 
@@ -115,7 +128,7 @@ public class SecurityConfig {
 
 
         /// Security Mechanism ( JWT )
-        http.oauth2ResourceServer(jwt->jwt.jwt(Customizer.withDefaults()));
+        http.oauth2ResourceServer(jwt -> jwt.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder)));
 
 
         /// Disable CSRF Token
